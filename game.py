@@ -30,7 +30,7 @@ class Game:
         if key not in moves:
             return False
 
-        # Save the state before the move.
+        # Save the state before the move for one-level undo.
         previous_grid = [row[:] for row in self.board.grid]
         previous_score = self.board.score
 
@@ -40,14 +40,27 @@ class Game:
             # Keep only one undo state.
             self.history = [(previous_grid, previous_score)]
 
-            # Successful move creates exactly one new tile.
+            # Add a random tile only after a successful move.
             self.board.add_random_tile()
 
-            # Track the highest score reached in this game.
+            # Track the best score for this game run.
             self.best_score = max(
                 self.best_score,
                 self.board.score
             )
+
+            directions = {
+                "a": "left",
+                "d": "right",
+                "w": "up",
+                "s": "down"
+            }
+
+            # One action-level feedback message.
+            if self.board.score > previous_score:
+                print(f"Moved {directions[key]} — merge!")
+            else:
+                print(f"Moved {directions[key]}.")
 
         return changed
 
@@ -57,10 +70,10 @@ class Game:
 
         previous_grid, previous_score = self.history.pop()
 
-        # Restore board contents.
+        # Restore the previous board.
         self.board.grid = [row[:] for row in previous_grid]
 
-        # Restore score.
+        # Restore the previous score.
         self.board.score = previous_score
 
         return True
